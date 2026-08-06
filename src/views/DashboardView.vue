@@ -228,4 +228,31 @@ const handleDeleteTx = async (tx: any) => {
 .margin-top {
   margin-top: 12px;
 }
+
+@media (max-width: 640px) {
+  .dashboard-view {
+    gap: 20px;
+  }
+
+  .page-title {
+    font-size: 1.4rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .recent-activity-section {
+    padding: 16px;
+  }
+
+  .accounts-grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

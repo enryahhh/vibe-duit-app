@@ -1,95 +1,86 @@
 <script setup lang="ts">
-import { onMounted, watch, ref, computed } from 'vue';
-import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from 'chart.js';
-import { formatCurrency } from '@/utils/formatCurrency';
+import { computed } from "vue";
+import { Doughnut } from "vue-chartjs";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  type ChartOptions,
+  type ChartData,
+} from "chart.js";
+import { formatCurrency } from "@/utils/formatCurrency";
 
-Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const props = defineProps<{
   categoriesData: Record<string, { name: string; amount: number; color?: string }>;
 }>();
-
-const canvasRef = ref<HTMLCanvasElement | null>(null);
-let chartInstance: Chart | null = null;
 
 const hasData = computed(() => {
   return Object.keys(props.categoriesData).length > 0;
 });
 
 const defaultColors = [
-  '#f59e0b', '#3b82f6', '#ec4899', '#ef4444',
-  '#8b5cf6', '#14b8a6', '#10b981', '#6b7280',
+  "#f59e0b",
+  "#3b82f6",
+  "#ec4899",
+  "#ef4444",
+  "#8b5cf6",
+  "#14b8a6",
+  "#10b981",
+  "#6b7280",
 ];
 
-const renderChart = () => {
-  if (!canvasRef.value) return;
-
-  if (chartInstance) {
-    chartInstance.destroy();
-  }
-
+const chartData = computed<ChartData<"doughnut">>(() => {
   const entries = Object.values(props.categoriesData);
-  if (entries.length === 0) return;
-
   const labels = entries.map((e) => e.name);
   const data = entries.map((e) => e.amount);
-  const bgColors = entries.map((e, idx) => e.color || defaultColors[idx % defaultColors.length]);
+  const bgColors = entries.map(
+    (e, idx) => e.color || defaultColors[idx % defaultColors.length],
+  );
 
-  chartInstance = new Chart(canvasRef.value, {
-    type: 'doughnut',
-    data: {
-      labels,
-      datasets: [
-        {
-          data,
-          backgroundColor: bgColors,
-          borderWidth: 2,
-          borderColor: '#1e293b',
-          hoverOffset: 6,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'right',
-          labels: {
-            color: '#94a3b8',
-            font: {
-              size: 13,
-              family: 'Inter, sans-serif',
-            },
-            padding: 16,
-          },
-        },
-        tooltip: {
-          callbacks: {
-            label: (context) => {
-              const label = context.label || '';
-              const val = (context.parsed as number) || 0;
-              return ` ${label}: ${formatCurrency(val, 'IDR')}`;
-            },
-          },
-        },
+  return {
+    labels,
+    datasets: [
+      {
+        data,
+        backgroundColor: bgColors,
+        borderWidth: 2,
+        borderColor: "rgba(30, 41, 59, 0.8)",
+        hoverOffset: 6,
       },
-      cutout: '70%',
-    },
-  });
-};
-
-onMounted(() => {
-  renderChart();
+    ],
+  };
 });
 
-watch(
-  () => props.categoriesData,
-  () => {
-    renderChart();
+const chartOptions = computed<ChartOptions<"doughnut">>(() => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: typeof window !== "undefined" && window.innerWidth < 640 ? "bottom" : "right",
+      labels: {
+        color: "#94a3b8",
+        font: {
+          size: 12,
+          family: "Inter, sans-serif",
+        },
+        padding: 12,
+      },
+    },
+    tooltip: {
+      callbacks: {
+        label: (context) => {
+          const label = context.label || "";
+          const val = (context.parsed as number) || 0;
+          return ` ${label}: ${formatCurrency(val, "IDR")}`;
+        },
+      },
+    },
   },
-  { deep: true }
-);
+  cutout: "70%",
+}));
 </script>
 
 <template>
@@ -99,7 +90,7 @@ watch(
     </div>
 
     <div v-if="hasData" class="chart-wrapper">
-      <canvas ref="canvasRef"></canvas>
+      <Doughnut :data="chartData" :options="chartOptions" />
     </div>
     <div v-else class="empty-chart">
       <p>No expense data recorded for this month yet.</p>
@@ -128,6 +119,9 @@ watch(
   flex: 1;
   width: 100%;
   min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .empty-chart {
@@ -137,5 +131,16 @@ watch(
   justify-content: center;
   color: var(--text-muted);
   font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .chart-container {
+    padding: 16px;
+    min-height: 280px;
+  }
+
+  .chart-wrapper {
+    min-height: 220px;
+  }
 }
 </style>

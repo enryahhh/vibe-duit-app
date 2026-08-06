@@ -335,6 +335,11 @@ const navigateToGoals = () => {
   transition: all 0.2s ease;
 }
 
+:global(html.light) .goal-item-row {
+  background: rgba(241, 245, 249, 0.6);
+  border-color: rgba(15, 23, 42, 0.06);
+}
+
 .goal-item-row:hover {
   background: rgba(30, 41, 59, 0.8);
   border-color: rgba(99, 102, 241, 0.3);
@@ -369,6 +374,10 @@ const navigateToGoals = () => {
   overflow: hidden;
 }
 
+:global(html.light) .item-bar-container {
+  background: rgba(203, 213, 225, 0.6);
+}
+
 .item-bar-fill {
   height: 100%;
   background: #6366f1;
@@ -380,5 +389,36 @@ const navigateToGoals = () => {
   font-weight: 700;
   color: var(--text-secondary);
   text-align: right;
+}
+
+@media (max-width: 640px) {
+  .goals-summary-widget {
+    padding: 14px;
+  }
+
+  .title {
+    font-size: 0.98rem;
+  }
+
+  .subtitle {
+    font-size: 0.72rem;
+  }
+
+  .goal-item-row {
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .item-bar-container {
+    grid-column: span 2;
+    order: 3;
+    width: 100%;
+    margin-top: 2px;
+  }
+
+  .item-pct {
+    font-size: 0.75rem;
+  }
 }
 </style>
