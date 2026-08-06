@@ -139,6 +139,8 @@ const handleDeleteTransaction = async (tx: any) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .page-title {
@@ -176,7 +178,7 @@ const handleDeleteTransaction = async (tx: any) => {
 .search-box input {
   width: 100%;
   padding-left: 42px;
-  background: rgba(15, 23, 42, 0.8);
+  background: var(--bg-secondary);
 }
 
 .filter-inputs {
@@ -189,6 +191,14 @@ const handleDeleteTransaction = async (tx: any) => {
 .filter-inputs input {
   flex: 1;
   min-width: 150px;
+}
+
+@media (max-width: 640px) {
+  .filter-inputs select,
+  .filter-inputs input {
+    width: 100%;
+    min-width: 100%;
+  }
 }
 
 .reset-btn {

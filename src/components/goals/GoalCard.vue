@@ -281,15 +281,27 @@ const priorityClass = computed(() => {
   flex-direction: column;
   gap: 16px;
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
   position: relative;
   overflow: hidden;
 }
 
 .goal-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+:global(html.light) .goal-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+:global(html.light) .goal-card:hover {
+  box-shadow: 0 12px 28px rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.4);
 }
 
 .is-completed {
@@ -305,12 +317,15 @@ const priorityClass = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .header-main {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .goal-icon-bg {
@@ -320,6 +335,7 @@ const priorityClass = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .priority-high {
@@ -345,10 +361,12 @@ const priorityClass = computed(() => {
   font-weight: 800;
   color: var(--text-primary);
   margin: 0;
+  line-height: 1.3;
 }
 
 .goal-badges {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-top: 4px;
 }
@@ -378,14 +396,15 @@ const priorityClass = computed(() => {
   display: flex;
   align-items: center;
   gap: 4px;
+  margin-left: auto;
 }
 
 .icon-btn {
   background: transparent;
   border: none;
   color: var(--text-muted);
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
@@ -469,11 +488,16 @@ const priorityClass = computed(() => {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+:global(html.light) .progress-bar-container {
+  background: rgba(226, 232, 240, 0.8);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #6366f1 0%, #a855f7 100%);
+  background: linear-gradient(90deg, #6366f1 0%, #a855f7 50%, #10b981 100%);
   border-radius: 9999px;
-  transition: width 0.4s ease;
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .progress-bar-fill.completed {
@@ -498,11 +522,16 @@ const priorityClass = computed(() => {
 .meta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
   font-size: 0.75rem;
   color: var(--text-secondary);
-  padding-top: 8px;
+  padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+:global(html.light) .meta-row {
+  border-top-color: rgba(15, 23, 42, 0.08);
 }
 
 .meta-item {
@@ -527,7 +556,7 @@ const priorityClass = computed(() => {
 
 .card-actions-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 8px;
 }
 
@@ -550,5 +579,16 @@ const priorityClass = computed(() => {
 .btn-sim:hover {
   background: rgba(168, 85, 247, 0.25);
   color: #ffffff;
+}
+
+@media (max-width: 480px) {
+  .rec-target {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .card-actions-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

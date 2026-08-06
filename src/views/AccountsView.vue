@@ -166,17 +166,18 @@ const handleDeleteAccount = async (id: string) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .page-title {
   font-size: 1.8rem;
   font-weight: 800;
-  color: var(--text-primary);
 }
 
 .page-subtitle {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
+  font-size: 0.9rem;
   margin-top: 4px;
 }
 
@@ -185,6 +186,18 @@ const handleDeleteAccount = async (id: string) => {
   align-items: center;
   justify-content: space-around;
   padding: 20px 24px;
+}
+
+@media (max-width: 640px) {
+  .summary-cards {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .divider {
+    display: none;
+  }
 }
 
 .summary-item {
@@ -230,6 +243,7 @@ const handleDeleteAccount = async (id: string) => {
   gap: 8px;
   overflow-x: auto;
   padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tab-btn {
@@ -246,6 +260,10 @@ const handleDeleteAccount = async (id: string) => {
   white-space: nowrap;
 }
 
+:global(html.light) .tab-btn {
+  background: rgba(15, 23, 42, 0.04);
+}
+
 .tab-btn.active {
   background: var(--accent-primary);
   color: #ffffff;
@@ -256,6 +274,12 @@ const handleDeleteAccount = async (id: string) => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
+}
+
+@media (max-width: 640px) {
+  .accounts-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .empty-state {

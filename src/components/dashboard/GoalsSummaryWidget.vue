@@ -249,6 +249,24 @@ const navigateToGoals = () => {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  flex-wrap: wrap;
+}
+
+:global(html.light) .summary-banner {
+  background: rgba(241, 245, 249, 0.7);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+@media (max-width: 640px) {
+  .summary-banner {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .banner-progress {
+    grid-column: span 2;
+  }
 }
 
 .banner-stat {

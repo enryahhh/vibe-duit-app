@@ -344,12 +344,15 @@ const handleLogSubmit = async (payload: {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .header-actions-row {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .btn-sim-header {
@@ -454,6 +457,8 @@ const handleLogSubmit = async (payload: {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .filter-tabs {
@@ -463,6 +468,14 @@ const handleLogSubmit = async (payload: {
   padding: 4px;
   border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+:global(html.light) .filter-tabs {
+  background: rgba(241, 245, 249, 0.8);
+  border-color: rgba(15, 23, 42, 0.08);
 }
 
 .tab-btn {
@@ -474,6 +487,7 @@ const handleLogSubmit = async (payload: {
   font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
   transition: all 0.2s ease;
 }
 
@@ -518,8 +532,14 @@ const handleLogSubmit = async (payload: {
 
 .goals-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
+}
+
+@media (max-width: 640px) {
+  .goals-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .spinner {
