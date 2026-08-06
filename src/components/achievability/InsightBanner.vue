@@ -8,6 +8,7 @@ import {
   Scissors,
   ArrowRight,
 } from "lucide-vue-next";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 const props = defineProps<{
   achievability: GoalAchievability;
@@ -79,7 +80,7 @@ const emit = defineEmits<{
           class="cat-pill"
           @click="emit('openSimulation', cat.categoryId)"
         >
-          Reduce {{ cat.categoryName }} (avg ${{ cat.avgMonthlyAmount }}/mo)
+          Reduce {{ cat.categoryName }} (avg {{ formatCurrency(cat.avgMonthlyAmount) }}/mo)
           <ArrowRight :size="12" />
         </button>
       </div>

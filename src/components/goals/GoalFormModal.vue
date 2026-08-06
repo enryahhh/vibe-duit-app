@@ -26,6 +26,17 @@ const emit = defineEmits<{
 const accountStore = useAccountStore();
 const goalStore = useGoalStore();
 
+const currencySymbol = computed(() => {
+  if (!linkedAccountId.value) return 'Rp';
+  const acc = accountStore.getAccountById(linkedAccountId.value);
+  const curr = acc?.currency || 'IDR';
+  if (curr === 'IDR') return 'Rp';
+  if (curr === 'USD') return '$';
+  if (curr === 'EUR') return '€';
+  if (curr === 'GBP') return '£';
+  return curr;
+});
+
 const name = ref("");
 const targetAmount = ref<number | "">("");
 const currentSaved = ref<number | "">(0);
@@ -153,7 +164,7 @@ const handleSubmit = () => {
               >Target Amount <span class="required">*</span></label
             >
             <div class="input-with-icon">
-              <DollarSign :size="16" class="field-icon" />
+              <span class="field-currency-badge">{{ currencySymbol }}</span>
               <input
                 id="target-amount"
                 v-model.number="targetAmount"
@@ -170,7 +181,7 @@ const handleSubmit = () => {
           <div class="form-group">
             <label for="current-saved">Starting Balance (Saved)</label>
             <div class="input-with-icon">
-              <DollarSign :size="16" class="field-icon" />
+              <span class="field-currency-badge">{{ currencySymbol }}</span>
               <input
                 id="current-saved"
                 v-model.number="currentSaved"
@@ -414,6 +425,15 @@ label {
   position: absolute;
   left: 12px;
   color: var(--text-muted);
+  pointer-events: none;
+}
+
+.field-currency-badge {
+  position: absolute;
+  left: 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--accent-primary);
   pointer-events: none;
 }
 

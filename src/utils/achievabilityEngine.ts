@@ -9,13 +9,14 @@ import type {
   WhatIfSimulationResult,
 } from "@/types/achievability";
 import { calculateMonthsRemaining } from "@/utils/recommendationEngine";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 /**
  * Analyzes transaction dates to check if user has at least N distinct months of history.
  */
 export function hasSufficientTransactionHistory(
   transactions: Transaction[],
-  requiredMonths = 3,
+  requiredMonths = 1,
 ): boolean {
   if (!transactions || transactions.length === 0) return false;
   const monthSet = new Set<string>();
@@ -125,8 +126,8 @@ export function evaluateGoalAchievability(
 ): GoalAchievability {
   const monthsRemaining = calculateMonthsRemaining(goal.deadline);
 
-  // 1. Check data sufficiency
-  const isSufficientData = hasSufficientTransactionHistory(transactions, 3);
+  // 1. Check data sufficiency (at least 1 month of transactions or 1 logged contribution)
+  const isSufficientData = hasSufficientTransactionHistory(transactions, 1);
   if (!isSufficientData && contributions.length === 0) {
     return {
       goalId: goal.id,
@@ -140,7 +141,7 @@ export function evaluateGoalAchievability(
       projectedCompletionDate: null,
       cashFlowTrend: "stable",
       insights: [
-        "Insufficient transaction data (needs at least 3 months) to evaluate achievability confidence.",
+        "Add at least 1 transaction or log a goal contribution to activate full achievability evaluation.",
       ],
       topDiscretionaryCategories: [],
     };
@@ -252,7 +253,7 @@ export function evaluateGoalAchievability(
     if (topCategories.length > 0) {
       const topCat = topCategories[0];
       insights.push(
-        `You've saved roughly ${contributionScore}% of your target monthly commitment. Consider reducing non-essential spending in '${topCat?.categoryName}' (avg $${topCat?.avgMonthlyAmount}/mo).`,
+        `You've saved roughly ${contributionScore}% of your target monthly commitment. Consider reducing non-essential spending in '${topCat?.categoryName}' (avg ${formatCurrency(topCat?.avgMonthlyAmount || 0)}/mo).`,
       );
     } else {
       insights.push(

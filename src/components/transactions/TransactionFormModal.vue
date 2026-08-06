@@ -32,6 +32,20 @@ const endDate = ref<string>('');
 
 const formError = ref<string | null>(null);
 
+const selectedAccountCurrency = computed(() => {
+  const acc = accountStore.getAccountById(fromAccountId.value);
+  return acc?.currency || 'IDR';
+});
+
+const currencySymbol = computed(() => {
+  const curr = selectedAccountCurrency.value;
+  if (curr === 'IDR') return 'Rp';
+  if (curr === 'USD') return '$';
+  if (curr === 'EUR') return '€';
+  if (curr === 'GBP') return '£';
+  return curr;
+});
+
 // Reset / initialize defaults when accounts or type change
 watch(
   () => accountStore.accounts,
@@ -157,7 +171,7 @@ const resetForm = () => {
           <div class="form-group flex-1">
             <label>Amount</label>
             <div class="amount-input-wrapper">
-              <span class="currency-symbol">$</span>
+              <span class="currency-symbol">{{ currencySymbol }}</span>
               <input
                 type="number"
                 step="0.01"

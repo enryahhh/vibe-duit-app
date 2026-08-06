@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import type { Goal } from "@/types/goal";
 import { formatCurrency } from "@/utils/formatCurrency";
-import { X, PlusCircle, Calendar, DollarSign, FileText } from "lucide-vue-next";
+import { useAccountStore } from "@/stores/useAccountStore";
+import { X, PlusCircle, Calendar, FileText } from "lucide-vue-next";
 
 const props = defineProps<{
   isOpen: boolean;
@@ -16,6 +17,19 @@ const emit = defineEmits<{
     payload: { goalId: string; amount: number; note?: string; date?: string },
   ): void;
 }>();
+
+const accountStore = useAccountStore();
+
+const currencySymbol = computed(() => {
+  if (!props.goal?.linkedAccountId) return "Rp";
+  const acc = accountStore.getAccountById(props.goal.linkedAccountId);
+  const curr = acc?.currency || "IDR";
+  if (curr === "IDR") return "Rp";
+  if (curr === "USD") return "$";
+  if (curr === "EUR") return "€";
+  if (curr === "GBP") return "£";
+  return curr;
+});
 
 const amount = ref<number | "">("");
 const note = ref("");
@@ -101,7 +115,7 @@ const handleSubmit = () => {
             >Contribution Amount <span class="required">*</span></label
           >
           <div class="input-with-icon">
-            <DollarSign :size="16" class="field-icon" />
+            <span class="field-currency-badge">{{ currencySymbol }}</span>
             <input
               id="contrib-amount"
               v-model.number="amount"
@@ -291,6 +305,15 @@ label {
   position: absolute;
   left: 12px;
   color: var(--text-muted);
+  pointer-events: none;
+}
+
+.field-currency-badge {
+  position: absolute;
+  left: 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--accent-primary);
   pointer-events: none;
 }
 
