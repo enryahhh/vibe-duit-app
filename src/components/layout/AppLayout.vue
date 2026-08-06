@@ -1,11 +1,21 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useTransactionStore } from '@/stores/useTransactionStore';
-import { useAuth } from '@/composables/useAuth';
-import type { CreateTransactionDTO } from '@/types/transaction';
-import TransactionFormModal from '@/components/transactions/TransactionFormModal.vue';
-import { LayoutDashboard, Wallet, ReceiptText, Plus, ShieldCheck, LogOut, User as UserIcon, Sparkles } from 'lucide-vue-next';
+import { ref, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useTransactionStore } from "@/stores/useTransactionStore";
+import { useAuth } from "@/composables/useAuth";
+import type { CreateTransactionDTO } from "@/types/transaction";
+import TransactionFormModal from "@/components/transactions/TransactionFormModal.vue";
+import {
+  LayoutDashboard,
+  Wallet,
+  ReceiptText,
+  Target,
+  Plus,
+  ShieldCheck,
+  LogOut,
+  User as UserIcon,
+  Sparkles,
+} from "lucide-vue-next";
 
 const route = useRoute();
 const router = useRouter();
@@ -13,12 +23,12 @@ const transactionStore = useTransactionStore();
 const { user, isAuthenticated, isAnonymous, logout } = useAuth();
 
 const isTxModalOpen = ref(false);
-const isLoginRoute = computed(() => route.path === '/login');
+const isLoginRoute = computed(() => route.path === "/login");
 
 const userDisplayName = computed(() => {
-  if (!user.value) return 'Guest User';
-  if (isAnonymous.value) return 'Guest User';
-  return user.value.displayName || user.value.email || 'Member User';
+  if (!user.value) return "Guest User";
+  if (isAnonymous.value) return "Guest User";
+  return user.value.displayName || user.value.email || "Member User";
 });
 
 const userInitial = computed(() => {
@@ -30,16 +40,16 @@ const handleAddTransaction = async (dto: CreateTransactionDTO) => {
   try {
     await transactionStore.addTransaction(dto);
   } catch (err: any) {
-    alert(err.message || 'Failed to save transaction');
+    alert(err.message || "Failed to save transaction");
   }
 };
 
 const handleLogout = async () => {
   try {
     await logout();
-    router.push('/login');
+    router.push("/login");
   } catch (err: any) {
-    console.error('Logout error:', err);
+    console.error("Logout error:", err);
   }
 };
 </script>
@@ -73,6 +83,9 @@ const handleLogout = async () => {
             </router-link>
             <router-link to="/transactions" class="nav-item">
               <ReceiptText :size="18" /> History
+            </router-link>
+            <router-link to="/goals" class="nav-item">
+              <Target :size="18" /> Goals
             </router-link>
           </nav>
 

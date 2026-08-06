@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useAccountStore } from '@/stores/useAccountStore';
-import { useTransactionStore } from '@/stores/useTransactionStore';
-import StatCard from '@/components/dashboard/StatCard.vue';
-import SpendingChart from '@/components/dashboard/SpendingChart.vue';
-import TransactionListItem from '@/components/transactions/TransactionListItem.vue';
-import AccountCard from '@/components/accounts/AccountCard.vue';
-import { ArrowRight, Plus } from 'lucide-vue-next';
+import { computed } from "vue";
+import { useAccountStore } from "@/stores/useAccountStore";
+import { useTransactionStore } from "@/stores/useTransactionStore";
+import StatCard from "@/components/dashboard/StatCard.vue";
+import SpendingChart from "@/components/dashboard/SpendingChart.vue";
+import TransactionListItem from "@/components/transactions/TransactionListItem.vue";
+import AccountCard from "@/components/accounts/AccountCard.vue";
+import GoalsSummaryWidget from "@/components/dashboard/GoalsSummaryWidget.vue";
+import { ArrowRight, Plus } from "lucide-vue-next";
 
 const accountStore = useAccountStore();
 const transactionStore = useTransactionStore();
@@ -16,7 +17,7 @@ const recentTransactions = computed(() => {
 });
 
 const handleDeleteTx = async (tx: any) => {
-  if (confirm('Are you sure you want to delete this transaction record?')) {
+  if (confirm("Are you sure you want to delete this transaction record?")) {
     await transactionStore.deleteTransaction(tx);
   }
 };
@@ -28,7 +29,10 @@ const handleDeleteTx = async (tx: any) => {
     <div class="welcome-banner">
       <div>
         <h1 class="page-title">Financial Dashboard</h1>
-        <p class="page-subtitle">Real-time overview of your net worth, accounts, and spending breakdown.</p>
+        <p class="page-subtitle">
+          Real-time overview of your net worth, accounts, and spending
+          breakdown.
+        </p>
       </div>
     </div>
 
@@ -60,10 +64,17 @@ const handleDeleteTx = async (tx: any) => {
       />
     </div>
 
-    <!-- 3. Dashboard Main Section (Charts + Recent Activity) -->
+    <!-- 3. Goals Summary Widget -->
+    <div class="goals-widget-row">
+      <GoalsSummaryWidget />
+    </div>
+
+    <!-- 4. Dashboard Main Section (Charts + Recent Activity) -->
     <div class="dashboard-content-grid">
       <div class="chart-section">
-        <SpendingChart :categories-data="transactionStore.currentMonthExpensesByCategory" />
+        <SpendingChart
+          :categories-data="transactionStore.currentMonthExpensesByCategory"
+        />
       </div>
 
       <div class="recent-activity-section glass-panel">
