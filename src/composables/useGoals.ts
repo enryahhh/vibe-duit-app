@@ -6,6 +6,8 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
+  getDocs,
+  writeBatch,
   query,
   orderBy,
   serverTimestamp,
@@ -216,7 +218,32 @@ export function useGoals() {
   const deleteGoal = async (id: string): Promise<void> => {
     if (!user.value)
       throw new Error("User must be authenticated to delete a goal");
-    const docRef = doc(db, "users", user.value.uid, "goals", id);
+
+    const uid = user.value.uid;
+
+    // 1. Unsubscribe real-time listener for contributions
+    if (contribUnsubscribers[id]) {
+      contribUnsubscribers[id]();
+      delete contribUnsubscribers[id];
+    }
+    const newContribMap = { ...contributionsMap.value };
+    delete newContribMap[id];
+    contributionsMap.value = newContribMap;
+
+    // 2. Cascade delete all subcollection contribution documents in a Firestore batch
+    const contribRef = collection(db, "users", uid, "goals", id, "contributions");
+    const contribSnapshot = await getDocs(contribRef);
+
+    if (!contribSnapshot.empty) {
+      const batch = writeBatch(db);
+      contribSnapshot.docs.forEach((docSnap) => {
+        batch.delete(docSnap.ref);
+      });
+      await batch.commit();
+    }
+
+    // 3. Delete parent goal document
+    const docRef = doc(db, "users", uid, "goals", id);
     await deleteDoc(docRef);
   };
 
