@@ -134,6 +134,7 @@ input:focus, select:focus, textarea:focus {
   width: 100%;
   max-width: 540px;
   max-height: 90vh;
+  padding: 24px;
   overflow-y: auto;
   animation: modalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }

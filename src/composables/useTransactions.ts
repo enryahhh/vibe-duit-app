@@ -15,6 +15,20 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/composables/useAuth';
 import type { Transaction, CreateTransactionDTO, TransactionFilter } from '@/types/transaction';
 
+function cleanUndefined<T extends Record<string, any>>(obj: T): Record<string, any> {
+  const result: Record<string, any> = {};
+  for (const key of Object.keys(obj)) {
+    if (obj[key] !== undefined) {
+      if (obj[key] !== null && typeof obj[key] === 'object' && !Array.isArray(obj[key]) && !(obj[key] instanceof Date) && typeof obj[key].toDate !== 'function') {
+        result[key] = cleanUndefined(obj[key]);
+      } else {
+        result[key] = obj[key];
+      }
+    }
+  }
+  return result;
+}
+
 /**
  * Composable for managing transaction lifecycle with atomic account balance updates.
  */
@@ -34,12 +48,12 @@ export function useTransactions() {
 
     try {
       const txRef = collection(db, 'users', userId, 'transactions');
-      const q = query(txRef, orderBy('date', 'desc'), orderBy('createdAt', 'desc'), limit(500));
+      const q = query(txRef, orderBy('date', 'desc'), limit(500));
 
       unsubscribe = onSnapshot(
         q,
         (snapshot) => {
-          transactions.value = snapshot.docs.map((docSnap) => {
+          const list = snapshot.docs.map((docSnap) => {
             const data = docSnap.data();
             return {
               id: docSnap.id,
@@ -55,6 +69,12 @@ export function useTransactions() {
               createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
               updatedAt: data.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
             } as Transaction;
+          });
+
+          // Secondary sort in-memory by createdAt descending when dates match
+          transactions.value = list.sort((a, b) => {
+            if (b.date !== a.date) return b.date.localeCompare(a.date);
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
           });
           loading.value = false;
         },
@@ -149,12 +169,12 @@ export function useTransactions() {
       }
 
       // Write transaction document
-      transaction.set(newTxRef, {
+      transaction.set(newTxRef, cleanUndefined({
         ...dto,
         amount,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      });
+      }));
     });
 
     return newTxRef.id;

@@ -15,6 +15,16 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/composables/useAuth';
 import type { Account, CreateAccountDTO } from '@/types/account';
 
+function cleanUndefined<T extends Record<string, any>>(obj: T): Record<string, any> {
+  const result: Record<string, any> = {};
+  for (const key of Object.keys(obj)) {
+    if (obj[key] !== undefined) {
+      result[key] = obj[key];
+    }
+  }
+  return result;
+}
+
 /**
  * Composable for Account CRUD operations and real-time synchronization.
  */
@@ -91,12 +101,12 @@ export function useAccounts() {
     const accountsRef = collection(db, 'users', user.value.uid, 'accounts');
     const newDocRef = doc(accountsRef);
 
-    const payload = {
+    const payload = cleanUndefined({
       ...accountDTO,
       balance: Number(accountDTO.balance),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-    };
+    });
 
     await setDoc(newDocRef, payload);
     return newDocRef.id;
@@ -106,10 +116,10 @@ export function useAccounts() {
     if (!user.value) throw new Error('User must be authenticated to update an account');
 
     const docRef = doc(db, 'users', user.value.uid, 'accounts', id);
-    const payload: Record<string, any> = {
+    const payload: Record<string, any> = cleanUndefined({
       ...updates,
       updatedAt: serverTimestamp(),
-    };
+    });
 
     if (updates.balance !== undefined) {
       payload.balance = Number(updates.balance);

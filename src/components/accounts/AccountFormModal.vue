@@ -67,11 +67,15 @@ const handleSubmit = () => {
     type: type.value,
     currency: currency.value,
     balance: balance.value,
-    institutionName: institutionName.value.trim() || undefined,
-    accountNumberMask: accountNumberMask.value.trim() || undefined,
     color: color.value,
     icon: type.value === 'bank' ? 'Landmark' : type.value === 'ewallet' ? 'Smartphone' : type.value === 'cash' ? 'Banknote' : type.value === 'credit_card' ? 'CreditCard' : 'TrendingUp',
   };
+
+  const inst = institutionName.value.trim();
+  if (inst) dto.institutionName = inst;
+
+  const mask = accountNumberMask.value.trim();
+  if (mask) dto.accountNumberMask = mask;
 
   emit('submit', dto);
   emit('close');
@@ -161,19 +165,29 @@ const handleSubmit = () => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  padding-bottom: 12px;
+  padding-bottom: 14px;
   border-bottom: var(--glass-border);
 }
 
 .close-btn {
   background: transparent;
   color: var(--text-secondary);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .account-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .error-banner {
@@ -199,7 +213,7 @@ const handleSubmit = () => {
 
 .form-row {
   display: flex;
-  gap: 12px;
+  gap: 16px;
 }
 
 .flex-1 {
@@ -207,16 +221,19 @@ const handleSubmit = () => {
 }
 
 .color-picker {
-  height: 40px;
-  padding: 2px;
+  height: 42px;
+  padding: 4px 6px;
   cursor: pointer;
   width: 100%;
+  border-radius: var(--radius-sm);
 }
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: var(--glass-border);
 }
 </style>
