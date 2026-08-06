@@ -5,6 +5,7 @@ import {
   evaluateGoalAchievability,
   runWhatIfSimulation,
 } from "@/utils/achievabilityEngine";
+import type { Goal } from "@/types/goal";
 import type {
   GoalAchievability,
   WhatIfSimulationParams,
@@ -25,7 +26,10 @@ export function useAchievability() {
     const map: Record<string, GoalAchievability> = {};
     const txs = transactionStore.transactions;
 
-    const goalsList = goalStore.goals || [];
+    const rawGoals = goalStore.goals;
+    const goalsList: Goal[] = Array.isArray(rawGoals)
+      ? rawGoals
+      : ((rawGoals as any)?.value || (rawGoals as any) || []);
     goalsList.forEach((goal) => {
       map[goal.id] = evaluateGoalAchievability(goal, txs);
     });

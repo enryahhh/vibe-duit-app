@@ -11,6 +11,7 @@ import {
   Wallet,
   ReceiptText,
   Target,
+  Calculator,
   Plus,
   ShieldCheck,
   LogOut,
@@ -97,6 +98,9 @@ const handleLogout = async () => {
             <router-link to="/goals" class="nav-item">
               <Target :size="18" /> Goals
             </router-link>
+            <router-link to="/calculators" class="nav-item">
+              <Calculator :size="18" /> Calculators
+            </router-link>
           </nav>
 
           <!-- Desktop Header Actions -->
@@ -171,6 +175,9 @@ const handleLogout = async () => {
             </router-link>
             <router-link to="/goals" class="mobile-nav-item">
               <Target :size="20" /> Goals
+            </router-link>
+            <router-link to="/calculators" class="mobile-nav-item">
+              <Calculator :size="20" /> Calculators
             </router-link>
           </nav>
 

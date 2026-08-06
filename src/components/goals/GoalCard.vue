@@ -21,6 +21,7 @@ import {
   Flame,
   Sliders,
   History,
+  TrendingUp,
 } from "lucide-vue-next";
 
 const props = defineProps<{
@@ -286,6 +287,12 @@ const priorityClass = computed(() => {
       >
         <Sliders :size="16" /> What-If Simulator
       </button>
+      <router-link
+        :to="{ path: '/calculators', query: { goalId: goal.id } }"
+        class="btn btn-secondary btn-calc"
+      >
+        <TrendingUp :size="16" /> Invest Plan
+      </router-link>
     </div>
 
     <!-- Toggle History Button -->
