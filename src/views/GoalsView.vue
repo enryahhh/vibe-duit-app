@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useGoalStore } from "@/stores/useGoalStore";
-import type { Goal, CreateGoalDTO, GoalStatus } from "@/types/goal";
+import { useAchievabilityStore } from "@/stores/useAchievabilityStore";
+import type { Goal, CreateGoalDTO } from "@/types/goal";
+import type { HealthStatus } from "@/types/achievability";
 import { formatCurrency } from "@/utils/formatCurrency";
 import GoalCard from "@/components/goals/GoalCard.vue";
 import GoalFormModal from "@/components/goals/GoalFormModal.vue";
 import ProgressLogModal from "@/components/goals/ProgressLogModal.vue";
+import WhatIfSimulationModal from "@/components/achievability/WhatIfSimulationModal.vue";
+import InsightBanner from "@/components/achievability/InsightBanner.vue";
 import {
   Target,
   Plus,
@@ -13,11 +17,16 @@ import {
   Clock,
   PauseCircle,
   Layers,
+  Sliders,
+  AlertTriangle,
 } from "lucide-vue-next";
 
 const goalStore = useGoalStore();
+const achievabilityStore = useAchievabilityStore();
 
-const activeFilter = ref<"all" | "active" | "completed" | "paused">("all");
+const activeFilter = ref<
+  "all" | "active" | "completed" | "paused" | HealthStatus
+>("all");
 
 const isFormModalOpen = ref(false);
 const goalToEdit = ref<Goal | null>(null);
@@ -25,13 +34,24 @@ const goalToEdit = ref<Goal | null>(null);
 const isLogModalOpen = ref(false);
 const goalToLog = ref<Goal | null>(null);
 
+const isSimModalOpen = ref(false);
+const simGoalId = ref<string>("");
+const simCategoryId = ref<string>("");
+
 const goals = computed(() => goalStore.goals);
 const loading = computed(() => goalStore.loading);
 const error = computed(() => goalStore.error);
 
 const filteredGoals = computed(() => {
   if (activeFilter.value === "all") return goals.value;
-  return goals.value.filter((g) => g.status === activeFilter.value);
+  if (["active", "completed", "paused"].includes(activeFilter.value)) {
+    return goals.value.filter((g) => g.status === activeFilter.value);
+  }
+  // Health status filter
+  return goals.value.filter((g) => {
+    const assessment = achievabilityStore.getGoalAchievability(g.id);
+    return assessment && assessment.healthStatus === activeFilter.value;
+  });
 });
 
 const activeCount = computed(() => goalStore.activeGoals.length);
@@ -39,8 +59,22 @@ const completedCount = computed(() => goalStore.completedGoals.length);
 const pausedCount = computed(
   () => goals.value.filter((g) => g.status === "paused").length,
 );
+const atRiskCount = computed(() => achievabilityStore.atRiskCount);
 const totalSaved = computed(() => goalStore.totalCurrentSaved);
 const totalTarget = computed(() => goalStore.totalTargetAmount);
+
+const topAttentionGoal = computed(() => {
+  const atRiskList = achievabilityStore.goalsRequiringAttention;
+  if (atRiskList.length === 0) return null;
+  const topGoal = atRiskList[0];
+  return topGoal ? achievabilityStore.getGoalAchievability(topGoal.id) : null;
+});
+
+const handleOpenSimulation = (goalId?: string, categoryId?: string) => {
+  simGoalId.value = goalId || "";
+  simCategoryId.value = categoryId || "";
+  isSimModalOpen.value = true;
+};
 
 const handleOpenCreateModal = () => {
   goalToEdit.value = null;
@@ -122,13 +156,32 @@ const handleLogSubmit = async (payload: {
         </p>
       </div>
 
-      <button
-        type="button"
-        class="btn btn-primary"
-        @click="handleOpenCreateModal"
-      >
-        <Plus :size="18" /> Create New Goal
-      </button>
+      <div class="header-actions-row">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sim-header"
+          @click="handleOpenSimulation()"
+        >
+          <Sliders :size="18" /> What-If Simulator
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          @click="handleOpenCreateModal"
+        >
+          <Plus :size="18" /> Create New Goal
+        </button>
+      </div>
+    </div>
+
+    <!-- Insight Banner for Top Attention / At Risk Goal -->
+    <div v-if="topAttentionGoal" class="attention-insight-section">
+      <InsightBanner
+        :achievability="topAttentionGoal"
+        @open-simulation="
+          (catId) => handleOpenSimulation(topAttentionGoal?.goalId, catId)
+        "
+      />
     </div>
 
     <!-- Stats Banner -->
@@ -195,6 +248,14 @@ const handleLogSubmit = async (payload: {
         <button
           type="button"
           class="tab-btn"
+          :class="{ active: activeFilter === 'at_risk' }"
+          @click="activeFilter = 'at_risk'"
+        >
+          At Risk ({{ atRiskCount }})
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
           :class="{ active: activeFilter === 'completed' }"
           @click="activeFilter = 'completed'"
         >
@@ -244,6 +305,7 @@ const handleLogSubmit = async (payload: {
         @edit="handleOpenEditModal"
         @toggle-pause="handleTogglePause"
         @delete="handleDeleteGoal"
+        @open-simulation="handleOpenSimulation"
       />
     </div>
 
@@ -261,6 +323,13 @@ const handleLogSubmit = async (payload: {
       @close="isLogModalOpen = false"
       @submit="handleLogSubmit"
     />
+
+    <WhatIfSimulationModal
+      :is-open="isSimModalOpen"
+      :initial-goal-id="simGoalId"
+      :initial-category-id="simCategoryId"
+      @close="isSimModalOpen = false"
+    />
   </div>
 </template>
 
@@ -274,7 +343,24 @@ const handleLogSubmit = async (payload: {
 .view-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-center;
+  align-items: center;
+}
+
+.header-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-sim-header {
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: #c084fc;
+}
+
+.btn-sim-header:hover {
+  background: rgba(168, 85, 247, 0.25);
+  color: #ffffff;
 }
 
 .page-title {

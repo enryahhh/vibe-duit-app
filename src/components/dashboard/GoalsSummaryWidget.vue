@@ -2,6 +2,8 @@
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { useGoalStore } from "@/stores/useGoalStore";
+import { useAchievabilityStore } from "@/stores/useAchievabilityStore";
+import GoalHealthBadge from "@/components/achievability/GoalHealthBadge.vue";
 import { formatCurrency } from "@/utils/formatCurrency";
 import {
   Target,
@@ -13,6 +15,7 @@ import {
 
 const router = useRouter();
 const goalStore = useGoalStore();
+const achievabilityStore = useAchievabilityStore();
 
 const activeGoals = computed(() => goalStore.activeGoals);
 const totalSaved = computed(() => goalStore.totalCurrentSaved);
@@ -21,6 +24,10 @@ const overallPct = computed(() => goalStore.overallProgressPercentage);
 const loading = computed(() => goalStore.loading);
 
 const topActiveGoals = computed(() => activeGoals.value.slice(0, 3));
+
+const getHealthStatus = (goalId: string) => {
+  return achievabilityStore.getGoalAchievability(goalId)?.healthStatus;
+};
 
 const navigateToGoals = () => {
   router.push("/goals");
@@ -104,7 +111,14 @@ const navigateToGoals = () => {
           @click="navigateToGoals"
         >
           <div class="item-info">
-            <span class="item-name">{{ goal.name }}</span>
+            <div class="item-name-row">
+              <span class="item-name">{{ goal.name }}</span>
+              <GoalHealthBadge
+                v-if="getHealthStatus(goal.id)"
+                :status="getHealthStatus(goal.id)!"
+                :show-icon="false"
+              />
+            </div>
             <span class="item-amounts">
               {{ formatCurrency(goal.currentSaved) }} /
               {{ formatCurrency(goal.targetAmount) }}
@@ -311,6 +325,12 @@ const navigateToGoals = () => {
 .item-info {
   display: flex;
   flex-direction: column;
+}
+
+.item-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .item-name {

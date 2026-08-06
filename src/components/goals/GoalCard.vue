@@ -3,6 +3,9 @@ import { computed } from "vue";
 import type { Goal } from "@/types/goal";
 import { useAccountStore } from "@/stores/useAccountStore";
 import { useGoalStore } from "@/stores/useGoalStore";
+import { useAchievabilityStore } from "@/stores/useAchievabilityStore";
+import GoalHealthBadge from "@/components/achievability/GoalHealthBadge.vue";
+import AchievabilityScoreGauge from "@/components/achievability/AchievabilityScoreGauge.vue";
 import { formatCurrency } from "@/utils/formatCurrency";
 import {
   Target,
@@ -16,6 +19,7 @@ import {
   Trash2,
   Plus,
   Flame,
+  Sliders,
 } from "lucide-vue-next";
 
 const props = defineProps<{
@@ -27,10 +31,16 @@ const emit = defineEmits<{
   (e: "edit", goal: Goal): void;
   (e: "togglePause", id: string): void;
   (e: "delete", id: string): void;
+  (e: "openSimulation", goalId: string): void;
 }>();
 
 const accountStore = useAccountStore();
 const goalStore = useGoalStore();
+const achievabilityStore = useAchievabilityStore();
+
+const achievability = computed(() => {
+  return achievabilityStore.getGoalAchievability(props.goal.id);
+});
 
 const linkedAccount = computed(() => {
   if (!props.goal.linkedAccountId) return null;
@@ -107,11 +117,22 @@ const priorityClass = computed(() => {
             >
               <CheckCircle :size="12" /> COMPLETED
             </span>
+            <GoalHealthBadge
+              v-if="achievability && goal.status === 'active'"
+              :status="achievability.healthStatus"
+            />
           </div>
         </div>
       </div>
 
       <div class="header-actions">
+        <AchievabilityScoreGauge
+          v-if="achievability && goal.status === 'active'"
+          :score="achievability.score"
+          :contribution-score="achievability.contributionScore"
+          :capacity-score="achievability.capacityScore"
+          :timeline-score="achievability.timelineScore"
+        />
         <button
           type="button"
           class="icon-btn"
@@ -227,15 +248,26 @@ const priorityClass = computed(() => {
       </div>
     </div>
 
-    <!-- Log Contribution Action Button -->
-    <div v-if="goal.status !== 'completed'" class="card-footer">
+    <!-- Log Contribution & What-If Action Buttons -->
+    <div
+      v-if="goal.status !== 'completed'"
+      class="card-footer card-actions-grid"
+    >
       <button
         type="button"
-        class="btn btn-primary btn-block btn-log"
+        class="btn btn-primary btn-log"
         :disabled="goal.status === 'paused'"
         @click="emit('logProgress', goal)"
       >
-        <Plus :size="16" /> Log Progress Contribution
+        <Plus :size="16" /> Log Progress
+      </button>
+      <button
+        type="button"
+        class="btn btn-secondary btn-sim"
+        :disabled="goal.status === 'paused'"
+        @click="emit('openSimulation', goal.id)"
+      >
+        <Sliders :size="16" /> What-If Simulator
       </button>
     </div>
   </div>
@@ -493,8 +525,30 @@ const priorityClass = computed(() => {
   margin-top: 4px;
 }
 
-.btn-log {
-  padding: 8px 14px;
-  font-size: 0.85rem;
+.card-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.btn-log,
+.btn-sim {
+  padding: 8px 10px;
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-sim {
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: #c084fc;
+}
+
+.btn-sim:hover {
+  background: rgba(168, 85, 247, 0.25);
+  color: #ffffff;
 }
 </style>
