@@ -47,7 +47,7 @@ export function useAccounts() {
               id: docSnap.id,
               name: data.name || '',
               type: data.type || 'bank',
-              currency: data.currency || 'USD',
+              currency: data.currency || 'IDR',
               balance: Number(data.balance || 0),
               institutionName: data.institutionName,
               accountNumberMask: data.accountNumberMask,

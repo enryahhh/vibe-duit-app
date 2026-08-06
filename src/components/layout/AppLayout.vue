@@ -1,12 +1,30 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useTransactionStore } from '@/stores/useTransactionStore';
+import { useAuth } from '@/composables/useAuth';
 import type { CreateTransactionDTO } from '@/types/transaction';
 import TransactionFormModal from '@/components/transactions/TransactionFormModal.vue';
-import { LayoutDashboard, Wallet, ReceiptText, Plus, ShieldCheck } from 'lucide-vue-next';
+import { LayoutDashboard, Wallet, ReceiptText, Plus, ShieldCheck, LogOut, User as UserIcon, Sparkles } from 'lucide-vue-next';
 
+const route = useRoute();
+const router = useRouter();
 const transactionStore = useTransactionStore();
+const { user, isAuthenticated, isAnonymous, logout } = useAuth();
+
 const isTxModalOpen = ref(false);
+const isLoginRoute = computed(() => route.path === '/login');
+
+const userDisplayName = computed(() => {
+  if (!user.value) return 'Guest User';
+  if (isAnonymous.value) return 'Guest User';
+  return user.value.displayName || user.value.email || 'Member User';
+});
+
+const userInitial = computed(() => {
+  const name = userDisplayName.value;
+  return name.charAt(0).toUpperCase();
+});
 
 const handleAddTransaction = async (dto: CreateTransactionDTO) => {
   try {
@@ -15,60 +33,90 @@ const handleAddTransaction = async (dto: CreateTransactionDTO) => {
     alert(err.message || 'Failed to save transaction');
   }
 };
+
+const handleLogout = async () => {
+  try {
+    await logout();
+    router.push('/login');
+  } catch (err: any) {
+    console.error('Logout error:', err);
+  }
+};
 </script>
 
 <template>
   <div class="app-layout">
-    <header class="app-header glass-panel">
-      <div class="header-container">
-        <div class="brand">
-          <div class="brand-logo">
-            <Wallet :size="24" class="logo-icon" />
-          </div>
-          <div class="brand-text">
-            <span class="brand-name">DUIT</span>
-            <span class="brand-badge">PRO</span>
-          </div>
-        </div>
-
-        <nav class="nav-links">
-          <router-link to="/" class="nav-item">
-            <LayoutDashboard :size="18" /> Dashboard
-          </router-link>
-          <router-link to="/accounts" class="nav-item">
-            <Wallet :size="18" /> Accounts
-          </router-link>
-          <router-link to="/transactions" class="nav-item">
-            <ReceiptText :size="18" /> History
-          </router-link>
-        </nav>
-
-        <div class="header-actions">
-          <button class="btn btn-primary" @click="isTxModalOpen = true">
-            <Plus :size="18" /> Log Transaction
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <main class="main-content">
+    <!-- Render full layout for main app, or raw view for login page -->
+    <template v-if="isLoginRoute">
       <router-view />
-    </main>
+    </template>
 
-    <footer class="app-footer">
-      <div class="footer-content">
-        <span>DUIT Financial Tracker &copy; 2026</span>
-        <span class="status-indicator">
-          <ShieldCheck :size="14" /> Cloud Firestore Sync Active
-        </span>
-      </div>
-    </footer>
+    <template v-else>
+      <header class="app-header glass-panel">
+        <div class="header-container">
+          <div class="brand">
+            <div class="brand-logo">
+              <Wallet :size="24" class="logo-icon" />
+            </div>
+            <div class="brand-text">
+              <span class="brand-name">DUIT</span>
+              <span class="brand-badge">PRO</span>
+            </div>
+          </div>
 
-    <TransactionFormModal
-      :is-open="isTxModalOpen"
-      @close="isTxModalOpen = false"
-      @submit="handleAddTransaction"
-    />
+          <nav class="nav-links">
+            <router-link to="/" class="nav-item">
+              <LayoutDashboard :size="18" /> Dashboard
+            </router-link>
+            <router-link to="/accounts" class="nav-item">
+              <Wallet :size="18" /> Accounts
+            </router-link>
+            <router-link to="/transactions" class="nav-item">
+              <ReceiptText :size="18" /> History
+            </router-link>
+          </nav>
+
+          <div class="header-actions">
+            <button class="btn btn-primary" @click="isTxModalOpen = true">
+              <Plus :size="18" /> Log Transaction
+            </button>
+
+            <div v-if="isAuthenticated" class="user-menu">
+              <div class="user-info" :title="user?.email || 'Logged In'">
+                <div class="avatar" :class="{ 'guest-avatar': isAnonymous }">
+                  <Sparkles v-if="isAnonymous" :size="14" />
+                  <span v-else>{{ userInitial }}</span>
+                </div>
+                <span class="user-name">{{ userDisplayName }}</span>
+              </div>
+
+              <button class="btn-logout" @click="handleLogout" title="Sign Out">
+                <LogOut :size="18" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <router-view />
+      </main>
+
+      <footer class="app-footer">
+        <div class="footer-content">
+          <span>DUIT Financial Tracker &copy; 2026</span>
+          <span class="status-indicator">
+            <ShieldCheck :size="14" /> Cloud Firestore Sync Active
+          </span>
+        </div>
+      </footer>
+
+      <TransactionFormModal
+        :is-open="isTxModalOpen"
+        @close="isTxModalOpen = false"
+        @submit="handleAddTransaction"
+      />
+    </template>
   </div>
 </template>
 
@@ -158,6 +206,74 @@ const handleAddTransaction = async (dto: CreateTransactionDTO) => {
 
 .nav-item.router-link-active {
   color: var(--accent-primary);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 16px;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.guest-avatar {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+}
+
+.user-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-logout {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  border-radius: 8px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-logout:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
 }
 
 .main-content {

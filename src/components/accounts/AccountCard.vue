@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import type { Account } from '@/types/account';
 import { Landmark, Smartphone, Banknote, CreditCard, TrendingUp, RefreshCw, Edit, Trash2 } from 'lucide-vue-next';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 const props = defineProps<{
   account: Account;
@@ -80,7 +81,7 @@ const formattedDate = computed(() => {
       <div class="balance-display">
         <span class="balance-label">Current Balance</span>
         <div class="balance-value" :class="{ liability: account.type === 'credit_card' }">
-          {{ account.currency }} {{ account.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+          {{ formatCurrency(account.balance, account.currency) }}
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Wallet, TrendingUp, TrendingDown, CreditCard } from 'lucide-vue-next';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 const props = defineProps<{
   title: string;
@@ -23,7 +24,7 @@ const iconComponent = computed(() => {
 });
 
 const formattedAmount = computed(() => {
-  return `$${props.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return formatCurrency(props.amount, 'IDR');
 });
 </script>
 

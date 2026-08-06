@@ -6,6 +6,7 @@ import AccountCard from '@/components/accounts/AccountCard.vue';
 import AccountFormModal from '@/components/accounts/AccountFormModal.vue';
 import BalanceAdjustModal from '@/components/accounts/BalanceAdjustModal.vue';
 import { Plus, Wallet, Landmark, Smartphone, Banknote, CreditCard, TrendingUp } from 'lucide-vue-next';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 const accountStore = useAccountStore();
 
@@ -83,17 +84,17 @@ const handleDeleteAccount = async (id: string) => {
     <div class="summary-cards glass-panel">
       <div class="summary-item">
         <span class="label">Total Asset Balances</span>
-        <span class="val positive">$ {{ accountStore.totalAssets.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</span>
+        <span class="val positive">{{ formatCurrency(accountStore.totalAssets, 'IDR') }}</span>
       </div>
       <div class="divider"></div>
       <div class="summary-item">
         <span class="label">Credit Card Liabilities</span>
-        <span class="val negative">$ {{ accountStore.totalLiabilities.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</span>
+        <span class="val negative">{{ formatCurrency(accountStore.totalLiabilities, 'IDR') }}</span>
       </div>
       <div class="divider"></div>
       <div class="summary-item">
         <span class="label">Calculated Net Worth</span>
-        <span class="val highlight">$ {{ accountStore.netWorth.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</span>
+        <span class="val highlight">{{ formatCurrency(accountStore.netWorth, 'IDR') }}</span>
       </div>
     </div>
 

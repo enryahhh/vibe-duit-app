@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, watch, ref, computed } from 'vue';
 import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from 'chart.js';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
 
@@ -68,7 +69,7 @@ const renderChart = () => {
             label: (context) => {
               const label = context.label || '';
               const val = (context.parsed as number) || 0;
-              return ` ${label}: $${val.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+              return ` ${label}: ${formatCurrency(val, 'IDR')}`;
             },
           },
         },

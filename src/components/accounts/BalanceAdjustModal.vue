@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue';
 import type { Account } from '@/types/account';
 import { X, RefreshCw } from 'lucide-vue-next';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -44,7 +45,7 @@ const handleSubmit = () => {
 
       <div class="account-info">
         <p class="account-name">{{ account.name }}</p>
-        <p class="current-bal">Current Recorded Balance: <strong>{{ account.currency }} {{ account.balance.toFixed(2) }}</strong></p>
+        <p class="current-bal">Current Recorded Balance: <strong>{{ formatCurrency(account.balance, account.currency) }}</strong></p>
       </div>
 
       <form @submit.prevent="handleSubmit" class="adjust-form">

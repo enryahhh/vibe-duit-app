@@ -7,6 +7,7 @@ import TransactionListItem from '@/components/transactions/TransactionListItem.v
 import TransactionFormModal from '@/components/transactions/TransactionFormModal.vue';
 import type { CreateTransactionDTO } from '@/types/transaction';
 import { Search, Plus, Filter, RotateCcw } from 'lucide-vue-next';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 const transactionStore = useTransactionStore();
 const accountStore = useAccountStore();
@@ -23,7 +24,7 @@ const handleSaveTransaction = async (dto: CreateTransactionDTO) => {
 };
 
 const handleDeleteTransaction = async (tx: any) => {
-  if (confirm(`Are you sure you want to delete this transaction of $${tx.amount}?`)) {
+  if (confirm(`Are you sure you want to delete this transaction of ${formatCurrency(tx.amount, 'IDR')}?`)) {
     try {
       await transactionStore.deleteTransaction(tx);
     } catch (err: any) {

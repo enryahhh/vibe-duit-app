@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import type { Transaction } from '@/types/transaction';
 import { useAccountStore } from '@/stores/useAccountStore';
 import { ArrowDownLeft, ArrowUpRight, ArrowLeftRight, Trash2 } from 'lucide-vue-next';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 const props = defineProps<{
   transaction: Transaction;
@@ -37,13 +38,10 @@ const typeIcon = computed(() => {
 });
 
 const formattedAmount = computed(() => {
-  const val = props.transaction.amount.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-  if (props.transaction.type === 'income') return `+ $${val}`;
-  if (props.transaction.type === 'expense') return `- $${val}`;
-  return `$${val}`;
+  const formatted = formatCurrency(props.transaction.amount, 'IDR');
+  if (props.transaction.type === 'income') return `+ ${formatted}`;
+  if (props.transaction.type === 'expense') return `- ${formatted}`;
+  return formatted;
 });
 </script>
 

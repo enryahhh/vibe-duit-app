@@ -15,13 +15,24 @@ const emit = defineEmits<{
 
 const name = ref('');
 const type = ref<AccountType>('bank');
-const currency = ref('USD');
+const currency = ref('IDR');
 const balance = ref<number | null>(0);
 const institutionName = ref('');
 const accountNumberMask = ref('');
 const color = ref('#3b82f6');
 
 const formError = ref<string | null>(null);
+
+const resetForm = () => {
+  name.value = '';
+  type.value = 'bank';
+  currency.value = 'IDR';
+  balance.value = 0;
+  institutionName.value = '';
+  accountNumberMask.value = '';
+  color.value = '#3b82f6';
+  formError.value = null;
+};
 
 watch(
   () => props.editAccount,
@@ -40,17 +51,6 @@ watch(
   },
   { immediate: true }
 );
-
-const resetForm = () => {
-  name.value = '';
-  type.value = 'bank';
-  currency.value = 'USD';
-  balance.value = 0;
-  institutionName.value = '';
-  accountNumberMask.value = '';
-  color.value = '#3b82f6';
-  formError.value = null;
-};
 
 const handleSubmit = () => {
   if (!name.value.trim()) {
@@ -113,10 +113,10 @@ const handleSubmit = () => {
           <div class="form-group flex-1">
             <label>Currency</label>
             <select v-model="currency" required>
+              <option value="IDR">IDR (Rp)</option>
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
               <option value="GBP">GBP (£)</option>
-              <option value="IDR">IDR (Rp)</option>
               <option value="JPY">JPY (¥)</option>
             </select>
           </div>
