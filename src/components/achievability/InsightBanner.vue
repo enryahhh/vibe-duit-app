@@ -94,8 +94,13 @@ const emit = defineEmits<{
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-card);
+  border: var(--glass-border);
+}
+
+:global(html.light) .insight-banner {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(15, 23, 42, 0.08);
 }
 
 .insight-banner.at_risk {

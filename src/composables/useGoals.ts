@@ -39,27 +39,73 @@ function cleanUndefined<T extends Record<string, any>>(
 export function useGoals() {
   const { user } = useAuth();
   const goals = ref<Goal[]>([]);
+  const contributionsMap = ref<Record<string, GoalProgressContribution[]>>({});
   const loading = ref<boolean>(true);
   const error = ref<string | null>(null);
 
-  let unsubscribe: Unsubscribe | null = null;
+  let goalsUnsubscribe: Unsubscribe | null = null;
+  const contribUnsubscribers: Record<string, Unsubscribe> = {};
+
+  const clearContribSubscriptions = () => {
+    Object.values(contribUnsubscribers).forEach((unsub) => unsub());
+    for (const key of Object.keys(contribUnsubscribers)) {
+      delete contribUnsubscribers[key];
+    }
+  };
+
+  const subscribeToGoalContributions = (userId: string, goalId: string) => {
+    if (contribUnsubscribers[goalId]) return;
+
+    try {
+      const contribRef = collection(db, "users", userId, "goals", goalId, "contributions");
+      const q = query(contribRef, orderBy("date", "desc"));
+
+      contribUnsubscribers[goalId] = onSnapshot(
+        q,
+        (snapshot) => {
+          contributionsMap.value = {
+            ...contributionsMap.value,
+            [goalId]: snapshot.docs.map((docSnap) => {
+              const data = docSnap.data();
+              return {
+                id: docSnap.id,
+                goalId: data.goalId || goalId,
+                amount: Number(data.amount || 0),
+                note: data.note || undefined,
+                date: data.date || new Date().toISOString().slice(0, 10),
+                createdAt:
+                  data.createdAt?.toDate?.()?.toISOString() ||
+                  new Date().toISOString(),
+              } as GoalProgressContribution;
+            }),
+          };
+        },
+        (err) => {
+          console.error(`Error fetching contributions for goal ${goalId}:`, err);
+        },
+      );
+    } catch (err) {
+      console.error("Failed to subscribe to goal contributions:", err);
+    }
+  };
 
   const subscribeToGoals = (userId: string) => {
     loading.value = true;
     error.value = null;
 
-    if (unsubscribe) {
-      unsubscribe();
+    if (goalsUnsubscribe) {
+      goalsUnsubscribe();
     }
+    clearContribSubscriptions();
 
     try {
       const goalsRef = collection(db, "users", userId, "goals");
       const q = query(goalsRef, orderBy("createdAt", "desc"));
 
-      unsubscribe = onSnapshot(
+      goalsUnsubscribe = onSnapshot(
         q,
         (snapshot) => {
-          goals.value = snapshot.docs.map((docSnap) => {
+          const loadedGoals: Goal[] = snapshot.docs.map((docSnap) => {
             const data = docSnap.data();
             return {
               id: docSnap.id,
@@ -81,7 +127,14 @@ export function useGoals() {
                 new Date().toISOString(),
             } as Goal;
           });
+
+          goals.value = loadedGoals;
           loading.value = false;
+
+          // Subscribe to real-time contributions for each goal
+          loadedGoals.forEach((goal) => {
+            subscribeToGoalContributions(userId, goal.id);
+          });
         },
         (err) => {
           console.error("Error fetching goals:", err);
@@ -101,8 +154,10 @@ export function useGoals() {
       if (newUser) {
         subscribeToGoals(newUser.uid);
       } else {
-        if (unsubscribe) unsubscribe();
+        if (goalsUnsubscribe) goalsUnsubscribe();
+        clearContribSubscriptions();
         goals.value = [];
+        contributionsMap.value = {};
         loading.value = false;
       }
     },
@@ -177,6 +232,15 @@ export function useGoals() {
     const targetGoal = goals.value.find((g) => g.id === goalId);
     if (!targetGoal) throw new Error("Goal not found");
 
+    const contribAmount = Number(amount);
+
+    // Optimistic local update for instant 0ms real-time reactivity
+    const updatedSaved = targetGoal.currentSaved + contribAmount;
+    targetGoal.currentSaved = updatedSaved;
+    if (updatedSaved >= targetGoal.targetAmount && targetGoal.status === "active") {
+      targetGoal.status = "completed";
+    }
+
     const contribRef = collection(
       db,
       "users",
@@ -189,7 +253,7 @@ export function useGoals() {
 
     const contribPayload = cleanUndefined({
       goalId,
-      amount: Number(amount),
+      amount: contribAmount,
       note,
       date: date || new Date().toISOString().slice(0, 10),
       createdAt: serverTimestamp(),
@@ -197,8 +261,7 @@ export function useGoals() {
 
     await setDoc(newDocRef, contribPayload);
 
-    // Update current saved and auto-complete status if target reached
-    const updatedSaved = targetGoal.currentSaved + Number(amount);
+    // Update current saved and auto-complete status in Firestore
     const updates: UpdateGoalDTO = {
       currentSaved: updatedSaved,
     };
@@ -212,14 +275,57 @@ export function useGoals() {
     await updateGoal(goalId, updates);
   };
 
-  onUnmounted(() => {
-    if (unsubscribe) {
-      unsubscribe();
+  const deleteContribution = async (
+    goalId: string,
+    contribId: string,
+    amount: number,
+  ): Promise<void> => {
+    if (!user.value)
+      throw new Error("User must be authenticated to delete a contribution");
+
+    const targetGoal = goals.value.find((g) => g.id === goalId);
+    if (!targetGoal) return;
+
+    // Delete contribution doc
+    const contribDocRef = doc(
+      db,
+      "users",
+      user.value.uid,
+      "goals",
+      goalId,
+      "contributions",
+      contribId,
+    );
+    await deleteDoc(contribDocRef);
+
+    // Deduct amount from currentSaved
+    const newSaved = Math.max(0, targetGoal.currentSaved - Number(amount));
+    targetGoal.currentSaved = newSaved;
+
+    const updates: UpdateGoalDTO = {
+      currentSaved: newSaved,
+    };
+    if (newSaved < targetGoal.targetAmount && targetGoal.status === "completed") {
+      updates.status = "active";
     }
+
+    await updateGoal(goalId, updates);
+  };
+
+  const getContributionsForGoal = (goalId: string): GoalProgressContribution[] => {
+    return contributionsMap.value[goalId] || [];
+  };
+
+  onUnmounted(() => {
+    if (goalsUnsubscribe) {
+      goalsUnsubscribe();
+    }
+    clearContribSubscriptions();
   });
 
   return {
     goals,
+    contributionsMap,
     loading,
     error,
     addGoal,
@@ -227,5 +333,7 @@ export function useGoals() {
     togglePauseGoal,
     deleteGoal,
     logProgressContribution,
+    deleteContribution,
+    getContributionsForGoal,
   };
 }

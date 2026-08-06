@@ -11,6 +11,7 @@ import type { Goal, GoalRecommendation } from "@/types/goal";
 export const useGoalStore = defineStore("goalStore", () => {
   const {
     goals,
+    contributionsMap,
     loading,
     error,
     addGoal,
@@ -18,6 +19,8 @@ export const useGoalStore = defineStore("goalStore", () => {
     togglePauseGoal,
     deleteGoal,
     logProgressContribution,
+    deleteContribution,
+    getContributionsForGoal,
   } = useGoals();
 
   const transactionStore = useTransactionStore();
@@ -84,6 +87,7 @@ export const useGoalStore = defineStore("goalStore", () => {
 
   return {
     goals,
+    contributionsMap,
     activeGoals,
     completedGoals,
     loading,
@@ -98,5 +102,7 @@ export const useGoalStore = defineStore("goalStore", () => {
     togglePauseGoal,
     deleteGoal,
     logProgressContribution,
+    deleteContribution,
+    getContributionsForGoal,
   };
 });

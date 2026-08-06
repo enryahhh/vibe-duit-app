@@ -177,14 +177,14 @@ const handleSubmit = () => {
   width: 100%;
   max-width: 480px;
   border-radius: var(--radius-xl);
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--bg-secondary);
+  border: var(--glass-border);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 .modal-header {
   padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: var(--glass-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -239,8 +239,8 @@ const handleSubmit = () => {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-card);
+  border: var(--glass-border);
   padding: 12px;
   border-radius: var(--radius-md);
 }
@@ -297,8 +297,8 @@ label {
 .form-input {
   width: 100%;
   padding: 10px 14px;
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--bg-secondary);
+  border: var(--glass-border);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-size: 0.9rem;

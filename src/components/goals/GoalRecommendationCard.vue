@@ -122,9 +122,14 @@ const handleApply = () => {
 .recommendation-card {
   padding: 20px;
   border-radius: var(--radius-lg);
-  background: rgba(30, 41, 59, 0.7);
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: var(--bg-card);
+  border: var(--glass-border);
   margin-bottom: 20px;
+}
+
+:global(html.light) .recommendation-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(99, 102, 241, 0.3);
 }
 
 .warning-border {

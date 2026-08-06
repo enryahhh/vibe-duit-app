@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { ref, computed } from "vue";
 import type { Goal } from "@/types/goal";
 import { useAccountStore } from "@/stores/useAccountStore";
 import { useGoalStore } from "@/stores/useGoalStore";
@@ -20,6 +20,7 @@ import {
   Plus,
   Flame,
   Sliders,
+  History,
 } from "lucide-vue-next";
 
 const props = defineProps<{
@@ -37,6 +38,22 @@ const emit = defineEmits<{
 const accountStore = useAccountStore();
 const goalStore = useGoalStore();
 const achievabilityStore = useAchievabilityStore();
+
+const showHistory = ref(false);
+
+const contributions = computed(() => {
+  return goalStore.getContributionsForGoal(props.goal.id);
+});
+
+const handleDeleteContrib = async (contribId: string, amount: number) => {
+  if (confirm("Are you sure you want to delete this contribution record?")) {
+    try {
+      await goalStore.deleteContribution(props.goal.id, contribId, amount);
+    } catch (err: any) {
+      alert(err.message || "Failed to delete contribution");
+    }
+  }
+};
 
 const achievability = computed(() => {
   return achievabilityStore.getGoalAchievability(props.goal.id);
@@ -269,6 +286,47 @@ const priorityClass = computed(() => {
       >
         <Sliders :size="16" /> What-If Simulator
       </button>
+    </div>
+
+    <!-- Toggle History Button -->
+    <div class="history-toggle-row">
+      <button
+        type="button"
+        class="btn-toggle-history"
+        @click="showHistory = !showHistory"
+      >
+        <History :size="14" />
+        <span>{{
+          showHistory
+            ? "Hide Contribution History"
+            : `History (${contributions.length})`
+        }}</span>
+      </button>
+    </div>
+
+    <!-- Expandable Contribution History Section -->
+    <div v-if="showHistory" class="contrib-history-section">
+      <h4 class="history-title">Logged Contributions</h4>
+      <div v-if="contributions.length > 0" class="contrib-list">
+        <div v-for="c in contributions" :key="c.id" class="contrib-item">
+          <div class="contrib-details">
+            <span class="contrib-amount">+ {{ formatCurrency(c.amount) }}</span>
+            <span class="contrib-date">{{ c.date }}</span>
+            <span v-if="c.note" class="contrib-note">• {{ c.note }}</span>
+          </div>
+          <button
+            type="button"
+            class="btn-delete-contrib"
+            title="Delete contribution record"
+            @click="handleDeleteContrib(c.id, c.amount)"
+          >
+            <Trash2 :size="14" />
+          </button>
+        </div>
+      </div>
+      <div v-else class="contrib-empty">
+        <span>No contribution records logged yet.</span>
+      </div>
     </div>
   </div>
 </template>
@@ -579,6 +637,118 @@ const priorityClass = computed(() => {
 .btn-sim:hover {
   background: rgba(168, 85, 247, 0.25);
   color: #ffffff;
+}
+
+/* Contribution History Styles */
+.history-toggle-row {
+  margin-top: 4px;
+  display: flex;
+}
+
+.btn-toggle-history {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.2s ease;
+}
+
+.btn-toggle-history:hover {
+  color: var(--accent-primary);
+}
+
+.contrib-history-section {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+:global(html.light) .contrib-history-section {
+  background: rgba(241, 245, 249, 0.7);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+.history-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.contrib-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.contrib-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+}
+
+:global(html.light) .contrib-item {
+  background: #ffffff;
+}
+
+.contrib-details {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.contrib-amount {
+  font-weight: 800;
+  color: var(--accent-success);
+}
+
+.contrib-date {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.contrib-note {
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 0.72rem;
+}
+
+.btn-delete-contrib {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-delete-contrib:hover {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.contrib-empty {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 @media (max-width: 480px) {

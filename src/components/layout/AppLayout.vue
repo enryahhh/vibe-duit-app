@@ -274,7 +274,6 @@ const handleLogout = async () => {
 :global(html.light) .brand-name {
   background: linear-gradient(90deg, #0f172a 0%, #475569 100%);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 .brand-badge {

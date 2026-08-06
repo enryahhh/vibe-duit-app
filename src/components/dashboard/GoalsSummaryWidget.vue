@@ -253,8 +253,13 @@ const navigateToGoals = () => {
 }
 
 :global(html.light) .summary-banner {
-  background: rgba(241, 245, 249, 0.7);
-  border-color: rgba(15, 23, 42, 0.08);
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+:global(html.light) .mini-bar-bg {
+  background: rgba(226, 232, 240, 1);
 }
 
 @media (max-width: 640px) {
@@ -336,13 +341,20 @@ const navigateToGoals = () => {
 }
 
 :global(html.light) .goal-item-row {
-  background: rgba(241, 245, 249, 0.6);
-  border-color: rgba(15, 23, 42, 0.06);
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
 }
 
 .goal-item-row:hover {
   background: rgba(30, 41, 59, 0.8);
   border-color: rgba(99, 102, 241, 0.3);
+}
+
+:global(html.light) .goal-item-row:hover {
+  background: #f8fafc;
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
 }
 
 .item-info {
@@ -362,9 +374,17 @@ const navigateToGoals = () => {
   color: var(--text-primary);
 }
 
+:global(html.light) .item-name {
+  color: #0f172a;
+}
+
 .item-amounts {
   font-size: 0.73rem;
   color: var(--text-muted);
+}
+
+:global(html.light) .item-amounts {
+  color: #64748b;
 }
 
 .item-bar-container {
@@ -375,7 +395,7 @@ const navigateToGoals = () => {
 }
 
 :global(html.light) .item-bar-container {
-  background: rgba(203, 213, 225, 0.6);
+  background: rgba(203, 213, 225, 0.8);
 }
 
 .item-bar-fill {
@@ -389,6 +409,10 @@ const navigateToGoals = () => {
   font-weight: 700;
   color: var(--text-secondary);
   text-align: right;
+}
+
+:global(html.light) .item-pct {
+  color: #4f46e5;
 }
 
 @media (max-width: 640px) {

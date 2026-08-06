@@ -95,11 +95,12 @@ const scoreColorClass = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-secondary);
+  border: var(--glass-border);
   padding: 8px 12px;
   border-radius: var(--radius-md);
   font-size: 0.75rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 .breakdown-header {
