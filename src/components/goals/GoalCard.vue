@@ -256,7 +256,7 @@ const priorityClass = computed(() => {
         title="Target Monthly Savings Contribution"
       >
         <span>
-          Target:
+          Month Plan:
           {{
             formatCurrency(
               goal.customMonthlyTarget || recommendation.recommendedMonthly,

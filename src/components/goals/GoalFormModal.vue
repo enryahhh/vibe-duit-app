@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
+import { deleteField } from "firebase/firestore";
 import type { Goal, CreateGoalDTO, GoalPriority } from "@/types/goal";
 import { useAccountStore } from "@/stores/useAccountStore";
 import { useGoalStore } from "@/stores/useGoalStore";
@@ -92,6 +93,15 @@ watch(
   { immediate: true },
 );
 
+watch(linkedAccountId, (newAccId) => {
+  if (newAccId && !isEditing.value && (currentSaved.value === 0 || currentSaved.value === "")) {
+    const acc = accountStore.getAccountById(newAccId);
+    if (acc) {
+      currentSaved.value = acc.balance;
+    }
+  }
+});
+
 const handleApplyRecommendation = (amount: number) => {
   customMonthlyTarget.value = amount;
   isCustomOverride.value = false;
@@ -117,7 +127,7 @@ const handleSubmit = () => {
     customMonthlyTarget:
       isCustomOverride.value && customMonthlyTarget.value
         ? Number(customMonthlyTarget.value)
-        : undefined,
+        : (deleteField() as any),
     status: props.goalToEdit ? props.goalToEdit.status : "active",
   };
 

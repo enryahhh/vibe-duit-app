@@ -191,9 +191,18 @@ export function useTransactions() {
     const amount = Number(tx.amount);
 
     await runTransaction(db, async (transaction) => {
+      // 1. Execute ALL READS before any writes
       const fromAccRef = doc(db, 'users', userId, 'accounts', tx.fromAccountId);
       const fromAccSnap = await transaction.get(fromAccRef);
 
+      let toAccRef = null;
+      let toAccSnap = null;
+      if (tx.toAccountId) {
+        toAccRef = doc(db, 'users', userId, 'accounts', tx.toAccountId);
+        toAccSnap = await transaction.get(toAccRef);
+      }
+
+      // 2. Execute ALL WRITES
       if (fromAccSnap.exists()) {
         const currentFromBalance = Number(fromAccSnap.data().balance || 0);
         // Revert calculations
@@ -215,17 +224,13 @@ export function useTransactions() {
         }
       }
 
-      if (tx.toAccountId) {
-        const toAccRef = doc(db, 'users', userId, 'accounts', tx.toAccountId);
-        const toAccSnap = await transaction.get(toAccRef);
-        if (toAccSnap.exists()) {
-          const currentToBalance = Number(toAccSnap.data().balance || 0);
-          if (tx.type === 'income' || tx.type === 'transfer') {
-            transaction.update(toAccRef, {
-              balance: currentToBalance - amount,
-              updatedAt: serverTimestamp(),
-            });
-          }
+      if (toAccRef && toAccSnap && toAccSnap.exists()) {
+        const currentToBalance = Number(toAccSnap.data().balance || 0);
+        if (tx.type === 'income' || tx.type === 'transfer') {
+          transaction.update(toAccRef, {
+            balance: currentToBalance - amount,
+            updatedAt: serverTimestamp(),
+          });
         }
       }
 
